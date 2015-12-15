@@ -33,6 +33,9 @@ void ofApp::update(){
 
 		if (SUCCEEDED(hResult)) {
 
+			jointList.clear();
+
+
 			for (int count = 0; count < BODY_COUNT; count++) {
 
 				BOOLEAN tracked;
@@ -40,6 +43,22 @@ void ofApp::update(){
 
 				UINT64 trackingId;
 				ERROR_CHECK( pBody[count]->get_TrackingId( &trackingId ) );
+
+				JointState state;
+				state.userNum = count;
+				jointList.push_back(state);
+
+				if (SUCCEEDED(hResult) && tracked) {
+
+					Joint joint[JointType::JointType_Count];
+					hResult = pBody[count] -> GetJoints(JointType::JointType_Count, joint);
+
+					for (int type = 0; type < JointType_Count; type++) {
+						jointList.back().joint[type] = joint[type];
+					}
+
+				}
+
 
 				// Tracking IDの登録
 				IVisualGestureBuilderFrameSource *gestureFrameSource;
@@ -96,7 +115,7 @@ void ofApp::update(){
 					// 検出結果の信頼値を取得
 					float confidence;
 					ERROR_CHECK( gestureResult->get_Confidence( &confidence ) );
-					cout << "信頼地：" << confidence << endl;
+					//cout << "信頼地：" << confidence << endl;
 
 
 					// Gestureの名前を取得
@@ -112,7 +131,7 @@ void ofApp::update(){
 
 					const std::wstring temp = &buffer[0];
 					const std::string name( temp.begin(), temp.end() );
-					cout << "ジェスチャーの名：" << name << endl;
+					//cout << "ジェスチャーの名：" << name << endl;
 
 					break;
 				}
@@ -141,7 +160,7 @@ void ofApp::update(){
 
 					const std::wstring temp = &buffer[0];
 					const std::string name( temp.begin(), temp.end() );
-					cout << "ジェスチャーの名：" << name << endl;
+					//cout << "ジェスチャーの名：" << name << endl;
 
 					break;
 				}
@@ -164,6 +183,21 @@ void ofApp::draw(){
 
 	ofSetColor(255);
 	colorImage.draw(0, 0);
+
+	for (int i = 0; i < jointList.size(); i++) {
+		for (int type = 0; type < JointType_Count; type++) {
+			ColorSpacePoint colorSpacePoint = { 0 };
+			pCoordinateMapper->MapCameraPointToColorSpace( jointList[i].joint[type].Position, &colorSpacePoint );
+			int x = static_cast<int>( colorSpacePoint.X );
+			int y = static_cast<int>( colorSpacePoint.Y );
+			if( ( x >= 0 ) && ( x < colorWidth ) && ( y >= 0 ) && ( y < colorHeight ) ){
+
+				ofSetColor(255,0,0);
+				ofCircle(x,y,10);
+
+			}
+		}
+	}
 
 }
 

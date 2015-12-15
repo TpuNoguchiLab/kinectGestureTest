@@ -21,6 +21,12 @@ inline void SafeRelease(Interface *& pInterfaceToRelease)
 }
 
 
+typedef struct  JointState{
+	int userNum;
+	Joint joint[JointType::JointType_Count];
+
+};
+
 class ofApp : public ofBaseApp{
 
 public:
@@ -55,6 +61,8 @@ public:
 	//body
 	IBodyFrameSource *pBodySource;
 	IBodyFrameReader *pBodyReader;
+	vector<JointState>jointList;
+
 
 	//gesture
 	IVisualGestureBuilderFrameReader *gestureFrameReader[BODY_COUNT];
